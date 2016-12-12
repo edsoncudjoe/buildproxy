@@ -27,6 +27,7 @@ class ProxyBuild(QtGui.QWidget):
         self.build_btn = QtGui.QPushButton('Build')
         self.progress = QtGui.QProgressBar()
         self.progress.setRange(0, 1)
+        self.text_browser = QtGui.QTextBrowser()
         self.msg = QtGui.QMessageBox()
 
         self.get_target_btn.clicked.connect(self.select_target_dir)
@@ -48,10 +49,11 @@ class ProxyBuild(QtGui.QWidget):
         main_grid.addWidget(self.set_proxy_location_btn, 3, 0)
         main_grid.addWidget(self.build_btn, 4, 0, 2, 4)
         main_grid.addWidget(self.progress, 6, 0, 1, 4)
+        main_grid.addWidget(self.text_browser, 7, 0, 10, 6)
 
         self.setLayout(main_grid)
-        self.setGeometry(300, 700, 600, 100)
-        self.setFixedSize(610, 200)
+        self.setGeometry(700, 700, 600, 100)
+        self.setFixedSize(610, 700)
         self.setWindowTitle('Proxy-Builder')
 
     def select_target_dir(self):
@@ -70,41 +72,49 @@ class ProxyBuild(QtGui.QWidget):
         orig_file = os.path.expanduser(self.target_file)
         op = self.target_file.replace(os.path.splitext(self.target_file)[1],
                                       '.mp4')
-        arguments = [
-            '-progress', 'progress.txt',
-            '-i', orig_file,
-            '-y', '-loglevel', 'verbose',
-            '-map', '0:v',
-            '-map', '0:0',
-            '-map', '0:1',
-            '-c:v', 'h264',
-            '-b:v', self.VIDEO_BR,
-            '-crf', self.CRF_VALUE,
-            '-pix_fmt', 'yuv420p',
-            '-vf', 'scale=320:240',
-            '-sws_flags', 'lanczos',
-            '-c:a', 'aac',
-            '-ac', '2',
-            '-b:a', self.AUDIO_BR,
-            '{}{}'.format(self.proxy_dir, op)
-        ]
-        proxy_dest = '{}{}'.format(self.proxy_dir, os.path.dirname(os.path.abspath(self.target_file)))
-        if not os.path.exists(proxy_dest):
-            os.makedirs(proxy_dest)
-        print(arguments)
+        if self.proxy_dir == None:
+            arguments = [
+                '-i', orig_file,
+                '-y', '-loglevel', 'warning',
+            ]
+        else:
+            arguments = [
+                '-progress', 'progress.txt',
+                '-i', orig_file,
+                '-y', '-loglevel', 'warning',
+                '-map', '0:v',
+                '-map', '0:0',
+                '-map', '0:1',
+                '-c:v', 'h264',
+                '-b:v', self.VIDEO_BR,
+                '-crf', self.CRF_VALUE,
+                '-pix_fmt', 'yuv420p',
+                '-vf', 'scale=320:240',
+                '-sws_flags', 'lanczos',
+                '-c:a', 'aac',
+                '-ac', '2',
+                '-b:a', self.AUDIO_BR,
+                '{}{}'.format(self.proxy_dir, op)
+            ]
+            proxy_dest = '{}{}'.format(self.proxy_dir, os.path.dirname(os.path.abspath(self.target_file)))
+            if not os.path.exists(proxy_dest):
+                os.makedirs(proxy_dest)
+        self.text_browser.append(str(arguments))
         self.process.start(self.FFMPEG, arguments)
         self.progress.setRange(0, 0)
         self.build_btn.setDisabled(True)
 
     def read_std_error(self):
-        print(str(self.process.readAllStandardError()))
+        self.text_browser.append(str(self.process.readAllStandardError()))
 
     def curr_status(self):
-        print(str(self.process.readAllStandardOutput()))
+        self.text_browser.append((str(self.process.readAllStandardOutput()),
+                                  '  '))
 
     def process_completed(self):
         self.progress.setRange(0, 1)
         self.build_btn.setEnabled(True)
+        self.text_browser.clearHistory()
         self.msg.information(self, 'Complete',
                              'Finished conversion')
 
