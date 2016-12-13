@@ -92,7 +92,7 @@ class ProxyBuild(QtGui.QWidget):
         arguments = [
             '-progress', 'progress.txt',
             '-i', orig_file,
-            '-y', '-loglevel', 'verbose',
+            '-y', '-loglevel', 'info',
             '-map', '0:v',
             '-map', '0:0',
             '-map', '0:1',
@@ -110,7 +110,7 @@ class ProxyBuild(QtGui.QWidget):
         proxy_dest = '{}{}'.format(self.proxy_dir, os.path.dirname(os.path.abspath(self.target_file)))
         if not os.path.exists(proxy_dest):
             os.makedirs(proxy_dest)
-
+        self.text_browser.clear()
         self.text_browser.appendPlainText(str(arguments))
         self.process_proxy.start(self.FFMPEG, arguments)
         self.progress.setRange(0, 0)
