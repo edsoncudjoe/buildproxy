@@ -79,42 +79,52 @@ class ProxyBuild(QtGui.QWidget):
         self.proxy_location_lbl.setText(self.proxy_dir)
 
     def scan_file(self):
-        inpf = self.target_file
-        scan_args = [
-            '-show_entries', 'stream=index,codec_type,codec_name', inpf,
-        ]
-        self.scan_process.start(self.FFPROBE, scan_args)
+        try:
+            inpf = self.target_file
+            scan_args = [
+                '-show_entries', 'stream=index,codec_type,codec_name', inpf,
+            ]
+            self.scan_process.start(self.FFPROBE, scan_args)
+        except AttributeError:
+            self.msg.warning(self, 'File not found', 'Select a file first',
+                             QtGui.QMessageBox.Ok)
 
     def create_proxy(self):
-        orig_file = self.target_file
-        op = self.target_file.replace(os.path.splitext(self.target_file)[1],
-                                      '.mp4')
-        arguments = [
-            '-progress', 'progress.txt',
-            '-i', orig_file,
-            '-y', '-loglevel', 'info',
-            '-map', '0:v',
-            '-map', '0:0',
-            '-map', '0:1',
-            '-c:v', 'h264',
-            '-b:v', self.VIDEO_BR,
-            '-crf', self.CRF_VALUE,
-            '-pix_fmt', 'yuv420p',
-            '-vf', 'scale=320:240',
-            '-sws_flags', 'lanczos',
-            '-c:a', 'aac',
-            '-ac', '2',
-            '-b:a', self.AUDIO_BR,
-            '{}{}'.format(self.proxy_dir, op)
-        ]
-        proxy_dest = '{}{}'.format(self.proxy_dir, os.path.dirname(os.path.abspath(self.target_file)))
-        if not os.path.exists(proxy_dest):
-            os.makedirs(proxy_dest)
-        self.text_browser.clear()
-        self.text_browser.appendPlainText(str(arguments))
-        self.process_proxy.start(self.FFMPEG, arguments)
-        self.progress.setRange(0, 0)
-        self.build_btn.setDisabled(True)
+        try:
+            orig_file = self.target_file
+            op = self.target_file.replace(os.path.splitext(self.target_file)[1],
+                                          '.mp4')
+            arguments = [
+                '-progress', 'progress.txt',
+                '-i', orig_file,
+                '-y', '-loglevel', 'info',
+                '-map', '0:v',
+                '-map', '0:0',
+                '-map', '0:1',
+                '-c:v', 'h264',
+                '-b:v', self.VIDEO_BR,
+                '-crf', self.CRF_VALUE,
+                '-pix_fmt', 'yuv420p',
+                '-vf', 'scale=320:240',
+                '-sws_flags', 'lanczos',
+                '-c:a', 'aac',
+                '-ac', '2',
+                '-b:a', self.AUDIO_BR,
+                '{}{}'.format(self.proxy_dir, op)
+            ]
+            proxy_dest = '{}{}'.format(self.proxy_dir, os.path.dirname(os.path.abspath(self.target_file)))
+            if not os.path.exists(proxy_dest):
+                os.makedirs(proxy_dest)
+            self.text_browser.clear()
+            self.text_browser.appendPlainText(str(arguments))
+            self.process_proxy.start(self.FFMPEG, arguments)
+            self.progress.setRange(0, 0)
+            self.build_btn.setDisabled(True)
+        except AttributeError:
+            self.msg.warning(self, 'File not found', 'Check that an input file'
+                                                     '\nand proxy directory '
+                                                     'have both been selected',
+                             QtGui.QMessageBox.Ok)
 
     def read_std_error(self):
         self.text_browser.appendPlainText(str(self.process_proxy.readAllStandardError()))
