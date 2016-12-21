@@ -1,6 +1,6 @@
 import os
 import re
-import pexpect
+import shlex
 import sys
 from PyQt4 import QtCore, QtGui
 
@@ -19,7 +19,7 @@ class ProxyBuild(QtGui.QWidget):
         self.CRF_VALUE = '25'
         self.VIDEO_BR = '100k'
         self.AUDIO_BR = '48k'
-        self.PRESET = 'ultrafast'
+        self.PRESET = 'fast'
 
     def initUI(self):
 
@@ -37,13 +37,20 @@ class ProxyBuild(QtGui.QWidget):
             QtGui.QTextOption.WrapAtWordBoundaryOrAnywhere)
         self.msg = QtGui.QMessageBox()
 
-        self.ch12 = QtGui.QCheckBox('Ch 1/2')
-        self.ch34 = QtGui.QCheckBox('Ch 3/4')
-        self.ch56 = QtGui.QCheckBox('Ch 5/6')
-        self.ch78 = QtGui.QCheckBox('Ch 7/8')
+        self.options_lbl = QtGui.QLabel('FFMpeg Options: ', self)
+        self.options_bar = QtGui.QLineEdit()
+        self.options_bar.setText('-preset fast')
 
-        self.mute = QtGui.QCheckBox('Mute')
+        # tooltips
+        self.get_target_btn.setToolTip('Open a new file')
+        self.scan_btn.setToolTip('Scan your file for media config')
+        self.set_proxy_location_btn.setToolTip('Choose where to save the '
+                                               'converted proxy file')
+        self.options_lbl.setToolTip('Add extra FFMpeg options')
+        self.options_bar.setToolTip('Add extra FFMpeg options')
+        self.build_btn.setToolTip('Build proxy media file')
 
+        # signals
         self.get_target_btn.clicked.connect(self.select_target_dir)
         self.set_proxy_location_btn.clicked.connect(self.set_proxy_dir)
 
@@ -67,12 +74,8 @@ class ProxyBuild(QtGui.QWidget):
         main_grid.addWidget(self.proxy_location_lbl, 3, 1, 1, 3)
         main_grid.addWidget(self.set_proxy_location_btn, 3, 0)
 
-        main_grid.addWidget(self.ch12, 5, 0)
-        main_grid.addWidget(self.ch34, 5, 1)
-        main_grid.addWidget(self.ch56, 5, 2)
-        main_grid.addWidget(self.ch78, 5, 3)
-
-        main_grid.addWidget(self.mute, 5, 4)
+        main_grid.addWidget(self.options_lbl, 5, 0)
+        main_grid.addWidget(self.options_bar, 5, 1)
 
         main_grid.addWidget(self.build_btn, 6, 0, 2, 5)
         main_grid.addWidget(self.progress, 7, 0, 1, 5)
@@ -101,263 +104,24 @@ class ProxyBuild(QtGui.QWidget):
             scan_args = [
                 '-show_entries', 'stream=index,codec_type,codec_name', inpf,
             ]
+            self.text_browser.clear()
             self.scan_process.start(self.FFPROBE, scan_args)
         except AttributeError:
             self.msg.warning(self, 'File not found', 'Select a file first',
                              QtGui.QMessageBox.Ok)
 
     def check_channels(self):
-        checked = []
         orig_file = self.target_file
         op = self.target_file.replace(os.path.splitext(self.target_file)[1],
                                           '.mov')
-        if (
-                self.ch12.isChecked() and
-                self.ch34.isChecked() and
-                self.ch56.isChecked() and
-                self.ch78.isChecked()
-        ):
-            checked.append([
-                '-i', orig_file,
-                '-y', '-loglevel', 'info',
-                '-map', '0:v',
-                '-c:v', 'h264',
-                '-b:v', self.VIDEO_BR,
-                '-crf', self.CRF_VALUE,
-                '-pix_fmt', 'yuv420p',
-                '-vf', 'scale=320:240',
-                '-sws_flags', 'lanczos',
-                '-c:a', 'aac',
-                '-ac', '2',
-                '-b:a', self.AUDIO_BR,
-                '{}{}'.format(self.proxy_dir, op)
-            ])
-        if self.ch12.isChecked():
-            if self.ch34.isChecked():
-                checked.append([
-                    '-i', orig_file,
-                    '-y', '-loglevel', 'info',
-                    '-map', '0:v',
-                    '-map', '0:0',
-                    '-map', '0:1',
-                    '-map', '0:2',
-                    '-map', '0:3',
-                    '-c:v', 'h264',
-                    '-b:v', self.VIDEO_BR,
-                    '-crf', self.CRF_VALUE,
-                    '-pix_fmt', 'yuv420p',
-                    '-vf', 'scale=320:240',
-                    '-sws_flags', 'lanczos',
-                    '-c:a', 'aac',
-                    '-ac', '2',
-                    '-b:a', self.AUDIO_BR,
-                    '{}{}'.format(self.proxy_dir, op)
-                ])
-            elif self.ch56.isChecked():
-                checked.append([
-                    '-i', orig_file,
-                    '-y', '-loglevel', 'info',
-                    '-map', '0:v',
-                    '-map', '0:0',
-                    '-map', '0:1',
-                    '-map', '0:4',
-                    '-map', '0:5',
-                    '-c:v', 'h264',
-                    '-b:v', self.VIDEO_BR,
-                    '-crf', self.CRF_VALUE,
-                    '-pix_fmt', 'yuv420p',
-                    '-vf', 'scale=320:240',
-                    '-sws_flags', 'lanczos',
-                    '-c:a', 'aac',
-                    '-ac', '2',
-                    '-b:a', self.AUDIO_BR,
-                    '{}{}'.format(self.proxy_dir, op)
-                ])
-            elif self.ch78.isChecked():
-                checked.append([
-                    '-i', orig_file,
-                    '-y', '-loglevel', 'info',
-                    '-map', '0:v',
-                    '-map', '0:0',
-                    '-map', '0:1',
-                    '-map', '0:6',
-                    '-map', '0:7',
-                    '-c:v', 'h264',
-                    '-b:v', self.VIDEO_BR,
-                    '-crf', self.CRF_VALUE,
-                    '-pix_fmt', 'yuv420p',
-                    '-vf', 'scale=320:240',
-                    '-sws_flags', 'lanczos',
-                    '-c:a', 'aac',
-                    '-ac', '2',
-                    '-b:a', self.AUDIO_BR,
-                    '{}{}'.format(self.proxy_dir, op)
-                ])
-            else:
-                checked.append([
-                        '-i', orig_file,
-                        '-y', '-loglevel', 'info',
-                        '-map', '0:v',
-                        '-map', '0:0',
-                        '-map', '0:1',
-                        '-c:v', 'h264',
-                        '-b:v', self.VIDEO_BR,
-                        '-crf', self.CRF_VALUE,
-                        '-pix_fmt', 'yuv420p',
-                        '-vf', 'scale=320:240',
-                        '-sws_flags', 'lanczos',
-                        '-c:a', 'aac',
-                        '-ac', '2',
-                        '-b:a', self.AUDIO_BR,
-                        '{}{}'.format(self.proxy_dir, op)
-                    ])
-        if self.ch34.isChecked():
-            if self.ch56.isChecked():
-                checked.append([
-                    '-i', orig_file,
-                    '-y', '-loglevel', 'info',
-                    '-map', '0:v',
-                    '-map', '0:2',
-                    '-map', '0:3',
-                    '-map', '0:4',
-                    '-map', '0:5',
-                    '-c:v', 'h264',
-                    '-b:v', self.VIDEO_BR,
-                    '-crf', self.CRF_VALUE,
-                    '-pix_fmt', 'yuv420p',
-                    '-vf', 'scale=320:240',
-                    '-sws_flags', 'lanczos',
-                    '-c:a', 'aac',
-                    '-ac', '2',
-                    '-b:a', self.AUDIO_BR,
-                    '{}{}'.format(self.proxy_dir, op)
-                ])
-            elif self.ch78.isChecked():
-                checked.append([
-                    '-i', orig_file,
-                    '-y', '-loglevel', 'info',
-                    '-map', '0:v',
-                    '-map', '0:2',
-                    '-map', '0:3',
-                    '-map', '0:6',
-                    '-map', '0:7',
-                    '-c:v', 'h264',
-                    '-b:v', self.VIDEO_BR,
-                    '-crf', self.CRF_VALUE,
-                    '-pix_fmt', 'yuv420p',
-                    '-vf', 'scale=320:240',
-                    '-sws_flags', 'lanczos',
-                    '-c:a', 'aac',
-                    '-ac', '2',
-                    '-b:a', self.AUDIO_BR,
-                    '{}{}'.format(self.proxy_dir, op)
-                ])
-            else:
-                checked.append([
-                        '-i', orig_file,
-                        '-y', '-loglevel', 'info',
-                        '-map', '0:v',
-                        '-map', '0:2',
-                        '-map', '0:3',
-                        '-c:v', 'h264',
-                        '-b:v', self.VIDEO_BR,
-                        '-crf', self.CRF_VALUE,
-                        '-pix_fmt', 'yuv420p',
-                        '-vf', 'scale=320:240',
-                        '-sws_flags', 'lanczos',
-                        '-c:a', 'aac',
-                        '-ac', '2',
-                        '-b:a', self.AUDIO_BR,
-                        '{}{}'.format(self.proxy_dir, op)
-                    ])
-        if self.ch56.isChecked():
-            if self.ch78.isChecked():
-                checked.append([
-                    '-i', orig_file,
-                    '-y', '-loglevel', 'info',
-                    '-map', '0:v',
-                    '-map', '0:4',
-                    '-map', '0:5',
-                    '-map', '0:6',
-                    '-map', '0:7',
-                    '-c:v', 'h264',
-                    '-b:v', self.VIDEO_BR,
-                    '-crf', self.CRF_VALUE,
-                    '-pix_fmt', 'yuv420p',
-                    '-vf', 'scale=320:240',
-                    '-sws_flags', 'lanczos',
-                    '-c:a', 'aac',
-                    '-ac', '2',
-                    '-b:a', self.AUDIO_BR,
-                    '{}{}'.format(self.proxy_dir, op)
-                ])
-            else:
-                checked.append([
-                    '-i', orig_file,
-                    '-y', '-loglevel', 'info',
-                    '-map', '0:v',
-                    '-map', '0:4',
-                    '-map', '0:5',
-                    '-c:v', 'h264',
-                    '-b:v', self.VIDEO_BR,
-                    '-crf', self.CRF_VALUE,
-                    '-pix_fmt', 'yuv420p',
-                    '-vf', 'scale=320:240',
-                    '-sws_flags', 'lanczos',
-                    '-c:a', 'aac',
-                    '-ac', '2',
-                    '-b:a', self.AUDIO_BR,
-                    '{}{}'.format(self.proxy_dir, op)
-                ])
-        if self.ch78.isChecked():
-            checked.append([
-                    '-i', orig_file,
-                    '-y', '-loglevel', 'info',
-                    '-map', '0:v',
-                    '-map', '0:6',
-                    '-map', '0:7',
-                    '-c:v', 'h264',
-                    '-b:v', self.VIDEO_BR,
-                    '-crf', self.CRF_VALUE,
-                    '-pix_fmt', 'yuv420p',
-                    '-vf', 'scale=320:240',
-                    '-sws_flags', 'lanczos',
-                    '-c:a', 'aac',
-                    '-ac', '2',
-                    '-b:a', self.AUDIO_BR,
-                    '{}{}'.format(self.proxy_dir, op)
-                ])
-        if self.mute.isChecked():
-            checked.append([
-                '-i', orig_file,
-                '-y', '-loglevel', 'info',
-                '-map', '0:v',
-                '-c:v', 'h264',
-                '-b:v', self.VIDEO_BR,
-                '-crf', self.CRF_VALUE,
-                '-pix_fmt', 'yuv420p',
-                '-vf', 'scale=320:240',
-                '-sws_flags', 'lanczos',
-                '{}{}'.format(self.proxy_dir, op)
-            ])
-        else:
-            checked.append([
-                '-i', orig_file,
-                '-y', '-loglevel', 'info',
-                '-map', '0:v',
-                '-c:v', 'h264',
-                '-b:v', self.VIDEO_BR,
-                '-crf', self.CRF_VALUE,
-                '-pix_fmt', 'yuv420p',
-                '-vf', 'scale=320:240',
-                '-sws_flags', 'lanczos',
-                '-c:a', 'aac',
-                '-ac', '2',
-                '-t', '1:00',
-                '-b:a', self.AUDIO_BR,
-                '{}{}'.format(self.proxy_dir, op)
-                ])
-        return checked[0]
+        option = ' ' + self.options_bar.text()
+        comm = "-i '{}' -y -loglevel info {} -c:v h264 -b:v {} -crf 25 " \
+               "-pix_fmt yuv420p -vf scale=320:240 -sws_flags lanczos -c:a " \
+               "aac -ac 2 -b:a {} '{}{}'".format(orig_file, option,
+                                                 self.VIDEO_BR, self.AUDIO_BR,
+                                                 self.proxy_dir, op)
+        checked = shlex.split(comm)
+        return checked
 
     def create_proxy(self):
         try:

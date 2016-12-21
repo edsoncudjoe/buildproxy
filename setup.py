@@ -12,9 +12,9 @@ OPTIONS = {'argv_emulation': True,
 
 setup(
     name='ProxyBuilder',
-    version='1.0.0',
+    version='1.0.1',
     description='Create 320x240 proxy video files',
-    date='14-Dec-2016',
+    date='21-Dec-2016',
     url='https://github.com/edsoncudjoe/buildproxy',
 
     author='Edson Cudjoe',
@@ -22,13 +22,17 @@ setup(
     license='MIT',
 
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
+        'Environment :: MacOS X',
         'Intended Audience :: Developers',
-        'Topic :: Software Development :: Media',
+        'Intended Audience :: Other Audience',
+        'Natural Language :: English',
+        'Topic :: Multimedia :: Video :: Conversion',
         'License :: OSI Approved :: MIT License',
-        'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
     ],
 
     keywords='python python3 pyqt4 ffmpeg',
