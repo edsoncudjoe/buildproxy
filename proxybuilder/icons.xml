@@ -1,0 +1,9 @@
+<RCC>
+    <qresource>
+        <file>icons/build-icon.png</file>
+        <file>icons/Folder-icon.png</file>
+        <file>icons/open-file-icon.png</file>
+        <file>icons/quit-icon.png</file>
+        <file>icons/scan-icon.png</file>
+    </qresource>
+</RCC>
