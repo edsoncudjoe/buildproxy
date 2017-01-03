@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'proxybuild.ui'
+# Form implementation generated from reading ui file 'proxybuilder/proxybuild.ui'
 #
 # Created by: PyQt4 UI code generator 4.11.4
 #
@@ -25,7 +25,7 @@ except AttributeError:
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName(_fromUtf8("MainWindow"))
-        MainWindow.resize(704, 575)
+        MainWindow.resize(690, 676)
         MainWindow.setAutoFillBackground(False)
         MainWindow.setTabShape(QtGui.QTabWidget.Triangular)
         MainWindow.setUnifiedTitleAndToolBarOnMac(True)
@@ -54,10 +54,10 @@ class Ui_MainWindow(object):
         self.set_output_dir_btn.setGeometry(QtCore.QRect(20, 80, 114, 32))
         self.set_output_dir_btn.setObjectName(_fromUtf8("set_output_dir_btn"))
         self.build_btn = QtGui.QPushButton(self.Sim_tab)
-        self.build_btn.setGeometry(QtCore.QRect(10, 160, 651, 51))
+        self.build_btn.setGeometry(QtCore.QRect(-10, 160, 681, 51))
         self.build_btn.setObjectName(_fromUtf8("build_btn"))
         self.progress_bar = QtGui.QProgressBar(self.Sim_tab)
-        self.progress_bar.setGeometry(QtCore.QRect(20, 210, 631, 23))
+        self.progress_bar.setGeometry(QtCore.QRect(0, 210, 661, 23))
         self.progress_bar.setProperty("value", 24)
         self.progress_bar.setObjectName(_fromUtf8("progress_bar"))
         self.ffmpeg_opts_edit = QtGui.QLineEdit(self.Sim_tab)
@@ -67,7 +67,7 @@ class Ui_MainWindow(object):
         self.ffmpeg_opts_lbl.setGeometry(QtCore.QRect(20, 120, 101, 31))
         self.ffmpeg_opts_lbl.setObjectName(_fromUtf8("ffmpeg_opts_lbl"))
         self.text_browser = QtGui.QPlainTextEdit(self.Sim_tab)
-        self.text_browser.setGeometry(QtCore.QRect(20, 240, 611, 171))
+        self.text_browser.setGeometry(QtCore.QRect(0, 240, 661, 291))
         self.text_browser.setObjectName(_fromUtf8("text_browser"))
         self.tabWidget.addTab(self.Sim_tab, _fromUtf8(""))
         self.adv_tab = QtGui.QWidget()
@@ -117,7 +117,7 @@ class Ui_MainWindow(object):
         self.gridLayout.addWidget(self.tabWidget, 0, 0, 1, 1)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 704, 22))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 690, 22))
         self.menubar.setObjectName(_fromUtf8("menubar"))
         self.menuFile = QtGui.QMenu(self.menubar)
         self.menuFile.setObjectName(_fromUtf8("menuFile"))
@@ -187,7 +187,7 @@ class Ui_MainWindow(object):
         self.msgbx = QtGui.QMessageBox()
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow", None))
+        MainWindow.setWindowTitle(_translate("MainWindow", "Proxy Builder", None))
         self.output_dir_lbl.setText(_translate("MainWindow", "TextLabel", None))
         self.filename_lbl.setText(_translate("MainWindow", "TextLabel", None))
         self.open_file_btn.setText(_translate("MainWindow", "Browse", None))

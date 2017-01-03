@@ -19,6 +19,8 @@ class MainApp(QtGui.QMainWindow):
         self.home = os.path.expanduser('~/')
         self.FFMPEG = '/usr/local/bin/ffmpeg'
         self.FFPROBE = '/usr/local/bin/ffprobe'
+        self.VIDEO_BR = '100k'
+        self.AUDIO_BR = '48k'
 
         self.ui.ffmpeg_opts_edit.setText('-preset fast')
         # Connections
@@ -26,6 +28,11 @@ class MainApp(QtGui.QMainWindow):
         self.ui.scan_file_btn.clicked.connect(self.scan_file)
         self.ui.set_output_dir_btn.clicked.connect(self.set_proxy_dir)
         self.ui.build_btn.clicked.connect(self.create_proxy)
+        self.ui.actionNew.triggered.connect(self.open_file)
+        self.ui.actionScan.triggered.connect(self.scan_file)
+        self.ui.actionSet_Proxy_Folder.triggered.connect(self.set_proxy_dir)
+        self.ui.actionBuild.triggered.connect(self.create_proxy)
+        self.ui.actionQuit.triggered.connect(self.close)
 
         self.scan_file_process = QtCore.QProcess(self)
         self.scan_file_process.readyReadStandardError.connect(self.scan_error)
@@ -35,8 +42,8 @@ class MainApp(QtGui.QMainWindow):
         self.process_proxy.finished.connect(self.process_completed)
 
     def open_file(self):
-        self.target_file = QtGui.QFileDialog.getOpenFileName(
-            caption='Select file', directory=self.home)
+        self.target_file = str(QtGui.QFileDialog.getOpenFileName(
+            caption='Select file', directory=self.home))
         self.ui.filename_lbl.setText(self.target_file)
 
     def scan_file(self):
@@ -73,24 +80,19 @@ class MainApp(QtGui.QMainWindow):
 
     def check_channels(self):
         orig_file = self.target_file
-
-        op = self.target_file.replace(os.path.splitext(self.target_file)[1],
-                                      '.mov')
-        print('op: {}'.format(op)) # TODO: app does not reach this point
-        option = ' ' + self.ffmpeg_opts_edit.text()
+        op = orig_file.replace(os.path.splitext(orig_file)[1], '.mov')
+        option = ' ' + self.ui.ffmpeg_opts_edit.text()
         comm = "-i '{}' -y -loglevel info {} -c:v h264 -b:v {} -crf 25 " \
                "-pix_fmt yuv420p -vf scale=320:240 -sws_flags lanczos -c:a " \
                "aac -ac 2 -b:a {} '{}{}'".format(orig_file, option,
                                                  self.VIDEO_BR, self.AUDIO_BR,
                                                  self.proxy_dir, op)
         checked = shlex.split(comm)
-        print(checked)
         return checked
 
     def create_proxy(self):
         try:
             arguments = self.check_channels()
-            print(arguments)
             proxy_dest = '{}{}'.format(self.proxy_dir, os.path.dirname(
                 os.path.abspath(self.target_file)))
             if not os.path.exists(proxy_dest):
@@ -100,18 +102,19 @@ class MainApp(QtGui.QMainWindow):
             self.process_proxy.start(self.FFMPEG, arguments)
             self.ui.progress_bar.setRange(0, 0)
             self.ui.build_btn.setDisabled(True)
+            self.ui.actionBuild.setDisabled(True)
         except AttributeError:
             self.ui.msgbx.warning(self, 'File not found', 'Check that an input file'
                                                      '\nand proxy directory '
                                                      'have both been selected',
                              QtGui.QMessageBox.Ok)
 
-
     def process_completed(self):
         self.ui.progress_bar.setRange(0, 1)
         self.ui.build_btn.setEnabled(True)
-        self.msg.information(self, 'Complete',
-                             'Finished conversion')
+        self.ui.actionBuild.setDisabled(False)
+        self.ui.msgbx.information(self, 'Complete', 'Finished conversion')
+
 
 def main():
     app = QtGui.QApplication(sys.argv)
