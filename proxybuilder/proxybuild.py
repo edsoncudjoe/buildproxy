@@ -202,7 +202,7 @@ class Ui_MainWindow(object):
         self.crf_lbl.setText(_translate("MainWindow", "CRF Value", None))
         self.abr_lbl.setText(_translate("MainWindow", "Audio Bitrate", None))
         self.vbr_lbl.setText(_translate("MainWindow", "Video Bitrate", None))
-        self.screen_size_lbl.setText(_translate("MainWindow", "Screen size", None))
+        self.screen_size_lbl.setText(_translate("MainWindow", "Frame size", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.adv_tab), _translate("MainWindow", "Advanced", None))
         self.tabWidget.setTabToolTip(self.tabWidget.indexOf(self.adv_tab), _translate("MainWindow", "More settings to fine-tune the quality", None))
         self.menuFile.setTitle(_translate("MainWindow", "File", None))

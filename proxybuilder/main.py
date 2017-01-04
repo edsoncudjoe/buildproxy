@@ -21,8 +21,27 @@ class MainApp(QtGui.QMainWindow):
         self.FFPROBE = '/usr/local/bin/ffprobe'
         self.VIDEO_BR = '100k'
         self.AUDIO_BR = '48k'
+        self.ffmpeg_frame_size = [
+            '160x120',
+            '240x180',
+            '320x240',
+            '480x360',
+            '640x360',
+            '640x480',
+            '720x480',
+            '720x540',
+            '768x576',
+            '1280x720',
+            '1980x1080'
+        ]
+        for size in self.ffmpeg_frame_size:
+            self.ui.screen_size_opts.addItem(size)
 
         self.ui.ffmpeg_opts_edit.setText('-preset fast')
+        self.ui.ffmpeg_loc_edit.setText(self.FFMPEG)
+        self.ui.ffprobe_loc_edit.setText(self.FFPROBE)
+        self.ui.abr_edit.setText(self.AUDIO_BR)
+        self.ui.vbr_edit.setText(self.VIDEO_BR)
         # Connections
         self.ui.open_file_btn.clicked.connect(self.open_file)
         self.ui.scan_file_btn.clicked.connect(self.scan_file)
@@ -40,6 +59,8 @@ class MainApp(QtGui.QMainWindow):
         self.process_proxy.readyReadStandardError.connect(self.read_std_error)
         self.process_proxy.readyReadStandardOutput.connect(self.curr_status)
         self.process_proxy.finished.connect(self.process_completed)
+
+
 
     def open_file(self):
         self.target_file = str(QtGui.QFileDialog.getOpenFileName(
