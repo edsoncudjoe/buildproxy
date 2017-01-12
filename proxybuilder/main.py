@@ -21,6 +21,7 @@ class MainApp(QtGui.QMainWindow):
         self.FFPROBE = '/usr/local/bin/ffprobe'
         self.VIDEO_BR = '100k'
         self.AUDIO_BR = '48k'
+        self.crf_lcd = ''
         self.ffmpeg_frame_size = [
             '160x120',
             '240x180',
@@ -47,6 +48,7 @@ class MainApp(QtGui.QMainWindow):
         self.ui.scan_file_btn.clicked.connect(self.scan_file)
         self.ui.set_output_dir_btn.clicked.connect(self.set_proxy_dir)
         self.ui.build_btn.clicked.connect(self.create_proxy)
+
         self.ui.actionNew.triggered.connect(self.open_file)
         self.ui.actionScan.triggered.connect(self.scan_file)
         self.ui.actionSet_Proxy_Folder.triggered.connect(self.set_proxy_dir)
@@ -59,8 +61,6 @@ class MainApp(QtGui.QMainWindow):
         self.process_proxy.readyReadStandardError.connect(self.read_std_error)
         self.process_proxy.readyReadStandardOutput.connect(self.curr_status)
         self.process_proxy.finished.connect(self.process_completed)
-
-
 
     def open_file(self):
         self.target_file = str(QtGui.QFileDialog.getOpenFileName(
@@ -100,13 +100,18 @@ class MainApp(QtGui.QMainWindow):
         self.ui.output_dir_lbl.setText(self.proxy_dir)
 
     def check_channels(self):
+        vbr = str(self.ui.vbr_edit.text())
+        abr = str(self.ui.abr_edit.text())
+        crf = str(self.ui.crf_out_lcd.value())
         orig_file = self.target_file
-        op = orig_file.replace(os.path.splitext(orig_file)[1], '.mov')
+        frame_size = str(self.ui.screen_size_opts.currentText()).replace('x',
+                                                                         ':')
+        op = orig_file.replace(os.path.splitext(orig_file)[1], '.mp4')
         option = ' ' + self.ui.ffmpeg_opts_edit.text()
-        comm = "-i '{}' -y -loglevel info {} -c:v h264 -b:v {} -crf 25 " \
-               "-pix_fmt yuv420p -vf scale=320:240 -sws_flags lanczos -c:a " \
+        comm = "-i '{}' -y -loglevel warning {} -c:v h264 -b:v {} -crf {} " \
+               "-pix_fmt yuv420p -vf scale={} -sws_flags lanczos -c:a " \
                "aac -ac 2 -b:a {} '{}{}'".format(orig_file, option,
-                                                 self.VIDEO_BR, self.AUDIO_BR,
+                                                 vbr, crf, frame_size, abr,
                                                  self.proxy_dir, op)
         checked = shlex.split(comm)
         return checked
