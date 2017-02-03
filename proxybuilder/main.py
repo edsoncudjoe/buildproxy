@@ -108,11 +108,16 @@ class MainApp(QtGui.QMainWindow):
                                                                          ':')
         op = orig_file.replace(os.path.splitext(orig_file)[1], '.mp4')
         option = ' ' + self.ui.ffmpeg_opts_edit.text()
-        comm = "-i '{}' -y -loglevel warning {} -c:v h264 -b:v {} -crf {} " \
+        comm = "-i '{}' -y -loglevel warning {} -c:v libx264 -b:v {} -crf {} " \
                "-pix_fmt yuv420p -vf scale={} -sws_flags lanczos -c:a " \
-               "aac -ac 2 -b:a {} '{}{}'".format(orig_file, option,
+               "aac -ac 2 -b:a {} -threads 1 '{}{}'".format(orig_file, option,
                                                  vbr, crf, frame_size, abr,
                                                  self.proxy_dir, op)
+
+        html5_mp4 = '-i {} -b:v 1500k -c:v libx264 ' \
+                    '-vpre baseline -g 30 -s 640x360 -threads 1' \
+                    '{}{}'.format(orig_file, self.proxy_dir, op)
+
         checked = shlex.split(comm)
         return checked
 
